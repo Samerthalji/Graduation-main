@@ -1,16 +1,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 export default function Sidebar() {
+  const {user}=useUser();
   return (
     <div className="col-span-3 hidden lg:block bg-gray-100 w-full sticky top-20 h-fit">
       {/* Profile Card */}
       <div className="flex flex-col justify-center items-center mx-auto my-2 w-full p-5 bg-white rounded-lg shadow-lg border border-gray-100 shadow-gray-500">
         <Link to="/profile">
-          <img src="/Abood.png" alt="profile" className="w-16 h-16 rounded-full" />
+          <img src={user?.profileImageUrl} alt="profile" className="w-16 h-16 rounded-full" />
         </Link>
-        <h1 className="text-2xl font-extrabold">AbdAlrahman Baker</h1>
-        <p className="text-gray-600">.net Developer</p>
+        <h1 className="text-2xl font-extrabold">{user?.fName} {user?.lName}</h1>
+        <p className="text-gray-600">{user?.headline}</p>
         <Link to="/profile"
           className="bg-white rounded-full text-blue-800 text-center border-2 border-blue-800 w-full p-1 my-2 hover:bg-blue-800 hover:text-white hover:-translate-y-0.5 transition-all duration-300">
           ViewProfile

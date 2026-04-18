@@ -1,223 +1,257 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Sidebar from '../components/Sidebar';
-import RightPanel from '../components/RightPanel';
-import Footer from '../components/Footer';
 import { Link } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+import { useUser } from '../context/UserContext';
 
-const initialPosts = [
-  {
-    id: 1,
-    user: 'Abdalrahman baker',
-    date: '1/4/2026',
-    text: 'abood baker this is my name and my age is 20 years old and my major is software engineering',
-    image: '/pexels-benjamin-adjei-abayie-2158492422-36659831.jpg',
-    likes: 124,
-    comments: 18,
-    liked: false,
-  },
-  {
-    id: 2,
-    user: 'Abdalrahman baker',
-    date: '1/4/2026',
-    text: 'Excited to share my latest project built with TailwindCSS! What do you think about the color scheme? 🚀💻',
-    image: null,
-    likes: 87,
-    comments: 12,
-    liked: false,
-  },
-];
+// --- مكون القائمة الجانبية (Sidebar) ---
+const Sidebar = ({ user }) => {
+  const menuItems = [
+    { name: 'Home', icon: 'fa-house', active: true },
+    { name: 'Jobs', icon: 'fa-briefcase', active: false },
+    { name: 'My Applications', icon: 'fa-file-lines', active: false },
+    { name: 'Saved Jobs', icon: 'fa-bookmark', active: false },
+  ];
 
+  return (
+    <div className="space-y-6">
+      {/* Profile Card */}
+      <div className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center group transition-all hover:shadow-md hover:shadow-blue-100/20">
+        <div className="relative mb-4">
+          <img className="w-20 h-20 rounded-3xl object-cover ring-4 ring-blue-50 group-hover:scale-105 transition-transform duration-500" src={user?.profileImageUrl || "/Abood.png"} alt="" />
+          <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>
+        </div>
+        <h3 className="text-lg font-black text-slate-900 leading-tight">{user?.fName} {user?.lName}</h3>
+        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-2 px-4 py-1.5 bg-blue-50/50 rounded-xl">Full-Stack Developer</p>
+        <Link to="/profile" className="w-full mt-6 py-3 border-2 border-slate-50 rounded-2xl text-[10px] font-black text-slate-400 hover:bg-slate-900 hover:border-slate-900 hover:text-white transition-all uppercase tracking-widest">
+          View Profile
+        </Link>
+      </div>
+
+      {/* Nav Links */}
+      <div className="bg-white rounded-[2.5rem] p-4 shadow-sm border border-slate-100 space-y-2">
+        {menuItems.map((item) => (
+          <button key={item.name} className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all group ${item.active ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600'}`}>
+            <i className={`fa-solid ${item.icon} text-lg ${item.active ? 'text-white' : 'group-hover:scale-110 transition-transform'}`}></i>
+            <span className="text-sm font-bold">{item.name}</span>
+          </button>
+        ))}
+        <hr className="my-4 border-slate-50" />
+        <button className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm">
+          <i className="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+
+      <button className="w-full py-4 bg-slate-900 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-950 transition-all flex items-center justify-center gap-2">
+        <i className="fa-solid fa-plus-circle text-xs"></i> Create Company
+      </button>
+    </div>
+  );
+};
+
+// --- مكون الجانب الأيمن (RightPanel) ---
+const RightPanel = () => {
+  const suggestions = [
+    { name: 'Abdalrahman Baker', role: '.NET Developer', avatar: '/Abood.png' },
+    { name: 'Suhaib Al-Khalidy', role: 'Frontend Developer', avatar: '/Abood.png' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-[2.5rem] p-7 shadow-sm border border-slate-100">
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
+            <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span>
+            Suggestions
+        </h3>
+        <div className="space-y-6">
+          {suggestions.map((person, i) => (
+            <div key={i} className="flex items-center gap-3 group">
+              <img src={person.avatar} className="w-12 h-12 rounded-2xl object-cover ring-2 ring-slate-50 group-hover:ring-blue-100 transition-all" alt="" />
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-black text-slate-800 truncate">{person.name}</h4>
+                <p className="text-[10px] font-bold text-slate-400 truncate uppercase tracking-tighter">{person.role}</p>
+              </div>
+              <button className="bg-blue-50 text-blue-600 w-9 h-9 rounded-xl hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center">
+                <i className="fa-solid fa-plus text-xs"></i>
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[2.5rem] p-7 shadow-lg shadow-blue-200 text-white relative overflow-hidden group">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-all"></div>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] mb-6 opacity-80">Featured Company</h3>
+        <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center">
+                <img src="googleLogo.png" className="w-7" alt="" />
+            </div>
+            <div>
+                <h4 className="text-base font-black">Google</h4>
+                <p className="text-xs opacity-70">Tech Industry</p>
+            </div>
+        </div>
+        <button className="w-full mt-8 py-3.5 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white hover:text-blue-600 transition-all">
+            Follow Company
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// --- الصفحة الرئيسية (HomePage) ---
 export default function HomePage() {
-  const [posts, setPosts] = useState(initialPosts);
+  const { user } = useUser();
   const [showPostModal, setShowPostModal] = useState(false);
   const [postText, setPostText] = useState('');
-  const [postImage, setPostImage] = useState(null);
   const [postImagePreview, setPostImagePreview] = useState(null);
-
-  const toggleLike = (id) => {
-    setPosts(prev => prev.map(p =>
-      p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p
-    ));
-  };
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      user: 'Abdalrahman Baker',
+      date: '1/4/2026',
+      text: 'Software Engineering is not just about coding, it is about solving problems and creating value. 🚀',
+      image: '/pexels-benjamin-adjei-abayie-2158492422-36659831.jpg',
+      likes: 124,
+      comments: 18,
+      liked: false,
+    }
+  ]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setPostImage(file);
       const reader = new FileReader();
       reader.onload = (ev) => setPostImagePreview(ev.target.result);
       reader.readAsDataURL(file);
     }
   };
 
-  const removeImage = () => {
-    setPostImage(null);
-    setPostImagePreview(null);
-  };
-
   const handlePost = (e) => {
     e.preventDefault();
-    if (!postText.trim() && !postImage) return;
+    if (!postText.trim() && !postImagePreview) return;
     const newPost = {
       id: Date.now(),
-      user: 'Abdalrahman baker',
-      date: new Date().toLocaleDateString(),
+      user: user?.fName + ' ' + user?.lName || 'User',
+      date: 'Today',
       text: postText,
       image: postImagePreview,
       likes: 0,
       comments: 0,
       liked: false,
     };
-    setPosts(prev => [newPost, ...prev]);
+    setPosts([newPost, ...posts]);
     setPostText('');
-    setPostImage(null);
     setPostImagePreview(null);
     setShowPostModal(false);
   };
 
   return (
-    <div className="bg-gray-100 overflow-x-hidden pt-16">
+    <div className="bg-[#F8F9FD] min-h-screen pt-24 pb-12 selection:bg-blue-100">
       <Navbar />
-      <div className="grid grid-cols-1 gap-5 mx-5 md:grid-cols-3 my-5 lg:grid-cols-12">
-        <Sidebar />
+      
+      <div className="max-w-[1350px] mx-auto px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left Column */}
+          <aside className="hidden lg:block lg:col-span-3 sticky top-24 h-fit">
+            <Sidebar user={user} />
+          </aside>
 
-        {/* Middle Column */}
-        <div className="col-span-6 bg-white border rounded-md m-2 gap-4 p-4 shadow-lg shadow-gray-500 mx-auto w-full">
-          <div className="flex flex-col justify-center items-center gap-3">
-
+          {/* Middle Column */}
+          <div className="col-span-12 lg:col-span-6 space-y-8">
+            
             {/* Create Post Bar */}
-            <div className="flex flex-col w-[95%] mx-auto my-2 p-5">
-              <div className="flex items-center space-x-4 gap-2">
-                <div className="flex-shrink-0">
-                  <Link to="/profile">
-                    <img className="w-11 h-11 rounded-full object-cover" src="/Abood.png" alt="User" />
-                  </Link>
-                </div>
-                <button
-                  onClick={() => setShowPostModal(true)}
-                  className="bg-blue-800 text-white px-6 py-3 w-full rounded-full font-bold shadow-lg hover:bg-blue-700 transition-all active:scale-95">
-                  <i className="fa-solid fa-plus mr-2"></i> Create New Post
-                </button>
-              </div>
+            <div className="bg-white border border-slate-100 p-4 rounded-[2.5rem] shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+              <img className="w-12 h-12 rounded-2xl object-cover ring-4 ring-slate-50" src={user?.profileImageUrl || '/Abood.png'} alt="" />
+              <button 
+                onClick={() => setShowPostModal(true)}
+                className="flex-1 text-left py-3.5 px-6 bg-slate-50 hover:bg-slate-100 rounded-2xl text-slate-400 font-bold text-sm transition-all"
+              >
+                What's on your mind, {user?.fName || 'Abood'}?
+              </button>
+              <button onClick={() => setShowPostModal(true)} className="w-12 h-12 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center justify-center">
+                <i className="fa-solid fa-plus text-sm"></i>
+              </button>
             </div>
 
-            {/* Post Modal */}
-            {showPostModal && (
-              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 overflow-y-auto">
-                <div className="min-h-full flex items-start justify-center p-4 py-10">
-                  <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                      <h2 className="text-xl font-bold text-blue-800">Create Post</h2>
-                      <button onClick={() => setShowPostModal(false)} className="text-gray-400 hover:text-red-500 transition-colors">
-                        <i className="fa-solid fa-xmark text-2xl"></i>
-                      </button>
-                    </div>
-                    <div className="p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <img src="/Abood.png" alt="Profile" className="w-12 h-12 rounded-full border-2 border-indigo-950 object-cover" />
-                        <div>
-                          <p className="font-bold text-blue-800 leading-none mb-1">Abdalrahman Baker</p>
-                          <span className="text-xs text-gray-500 italic">.Net Developer</span>
+            {/* Posts Feed */}
+            <div className="space-y-8">
+              {posts.map(post => (
+                <article key={post.id} className="bg-white border border-slate-100 rounded-[3rem] p-8 shadow-sm hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-500 group">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <img className="w-14 h-14 rounded-2xl object-cover border-4 border-slate-50" src="/Abood.png" alt="" />
+                      <div>
+                        <h3 className="text-base font-black text-slate-900 leading-tight">{post.user}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest px-2 py-0.5 bg-blue-50 rounded-lg">Active Now</span>
+                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{post.date}</span>
                         </div>
                       </div>
-                      <form onSubmit={handlePost} className="space-y-4">
-                        <textarea
-                          placeholder="What's on your mind, Abood?"
-                          value={postText}
-                          onChange={e => setPostText(e.target.value)}
-                          className="w-full h-24 text-lg border-none focus:ring-0 resize-none outline-none placeholder-gray-400"
-                        />
-                        {!postImagePreview ? (
-                          <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:bg-indigo-50 transition-all">
-                            <i className="fa-solid fa-cloud-arrow-up text-3xl text-blue-800 mb-2"></i>
-                            <p className="text-sm text-gray-500">Add a photo to your post</p>
-                            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                          </label>
-                        ) : (
-                          <div className="relative rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
-                            <img src={postImagePreview} alt="preview" className="w-full h-auto block shadow-inner" />
-                            <button type="button" onClick={removeImage}
-                              className="absolute top-2 right-2 bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black transition-all">
-                              <i className="fa-solid fa-xmark"></i>
-                            </button>
-                          </div>
-                        )}
-                        <div className="flex justify-between items-center pt-4 border-t border-gray-100">
-                          <button type="submit"
-                            className="bg-blue-800 text-white px-10 py-2 mx-auto w-full rounded-full font-bold shadow-md hover:bg-indigo-900 transition-all">
-                            Post
-                          </button>
-                        </div>
-                      </form>
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
 
-            {/* Posts Feed */}
-            {posts.map(post => (
-              <div key={post.id} className="w-full bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center px-4 py-3">
-                  <div className="h-12 w-12 rounded-full overflow-hidden border border-gray-100 shrink-0">
-                    <Link to="/profile">
-                      <img className="w-full h-full object-cover" src="/Abood.png" alt="User" />
-                    </Link>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-bold text-gray-900 leading-tight">{post.user}</h3>
-                    <div className="flex items-center text-left text-xs text-gray-500 mt-0.5">
-                      <span>{post.date}</span>
+                  <p className="text-slate-600 text-[16px] leading-relaxed font-semibold mb-6 px-2">{post.text}</p>
+                  
+                  {post.image && (
+                    <div className="rounded-[2.5rem] overflow-hidden border border-slate-50 mb-6">
+                      <img className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700" src={post.image} alt="" />
                     </div>
-                  </div>
-                  <button className="ml-auto text-indigo-950 hover:text-white hover:bg-indigo-950 text-lg p-2 rounded-full transition">
-                    <i className="fa-solid fa-plus"></i>
-                  </button>
-                </div>
-                {/* Text */}
-                <div className="px-4 pb-3">
-                  <p className="text-gray-800 text-sm leading-relaxed">{post.text}</p>
-                </div>
-                {/* Image */}
-                {post.image && (
-                  <div className="bg-gray-100">
-                    <img className="w-full h-auto block" src={post.image} alt="Post" />
-                  </div>
-                )}
-                {/* Counts */}
-                <div className="px-4 py-2 border-b border-gray-100 flex justify-between items-center text-xs text-gray-500">
-                  <div className="flex items-center space-x-1">
-                    <span className="bg-indigo-900 text-white p-1 rounded-full">
-                      <i className="fa-regular fa-thumbs-up"></i>
-                    </span>
-                    <span className="pl-1">{post.likes} Like</span>
-                  </div>
-                  <div><span className="hover:underline cursor-pointer">{post.comments} comments</span></div>
-                </div>
-                {/* Actions */}
-                <div className="flex items-center px-2 py-1">
-                  <button
-                    onClick={() => toggleLike(post.id)}
-                    className={`flex-1 flex items-center justify-center space-x-2 hover:bg-gray-100 py-2 rounded-lg transition font-medium text-sm ${post.liked ? 'text-blue-800' : 'text-gray-600'}`}>
-                    <i className={`fa-${post.liked ? 'solid' : 'regular'} fa-thumbs-up`}></i>
-                    <span>{post.liked ? 'Liked' : 'Like'}</span>
-                  </button>
-                  <button className="flex-1 flex items-center justify-center space-x-2 hover:bg-gray-100 py-2 rounded-lg text-gray-600 transition font-medium text-sm">
-                    <i className="fa-regular fa-comment"></i>
-                    <span>Comment</span>
-                  </button>
-                </div>
-              </div>
-            ))}
+                  )}
 
+                  <div className="flex items-center justify-between pt-6 border-t border-slate-50 px-2">
+                    <div className="flex gap-4">
+                      <button className={`flex items-center gap-2 px-6 py-2.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${post.liked ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' : 'bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600'}`}>
+                        <i className="fa-regular fa-heart text-base"></i> {post.likes}
+                      </button>
+                      <button className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-slate-50 text-slate-400 hover:bg-slate-100 font-black text-[10px] uppercase tracking-widest transition-all">
+                        <i className="fa-regular fa-comment text-base"></i> {post.comments}
+                      </button>
+                    </div>
+                    <button className="w-10 h-10 rounded-xl text-slate-300 hover:text-blue-600 transition-colors">
+                        <i className="fa-regular fa-bookmark text-xl"></i>
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <aside className="hidden lg:block lg:col-span-3 sticky top-24 h-fit">
+            <RightPanel />
+          </aside>
+
+        </div>
+      </div>
+
+      {/* Post Modal */}
+      {showPostModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-xl rounded-[3.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+            <div className="px-10 py-8 border-b border-slate-50 flex justify-between items-center">
+              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">Create Post</h2>
+              <button onClick={() => setShowPostModal(false)} className="text-slate-300 hover:text-rose-500 transition-all">
+                <i className="fa-solid fa-circle-xmark text-3xl"></i>
+              </button>
+            </div>
+            <form onSubmit={handlePost} className="p-10 space-y-6">
+              <textarea
+                placeholder="What's happening?"
+                value={postText}
+                onChange={e => setPostText(e.target.value)}
+                className="w-full h-32 text-xl font-bold border-none focus:ring-0 resize-none outline-none placeholder-slate-200 text-slate-800"
+              />
+              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-[1.8rem] font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-100 transition-all active:scale-95">
+                Broadcast Post
+              </button>
+            </form>
           </div>
         </div>
+      )}
 
-        <RightPanel />
-      </div>
-      <Footer />
-    </div>
+     </div>
   );
 }

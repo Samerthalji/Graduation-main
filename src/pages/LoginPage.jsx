@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../Api/authService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUser } from '../context/UserContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -9,7 +10,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  const { fetchUser } = useUser();
   const validate = () => {
     const e = {};
     if (!form.email) e.email = 'البريد الإلكتروني مطلوب';
@@ -43,6 +44,7 @@ export default function LoginPage() {
       // axios بيمسك status 200 تلقائياً
       if (userData && (userData.status === 200 || userData.token)) {
         if (userData.token) localStorage.setItem('token', userData.token);
+       await fetchUser();
         navigate('/home');
       }
     } catch (error) {
@@ -109,7 +111,7 @@ export default function LoginPage() {
                 placeholder="name@example.com"
                 value={form.email} 
                 onChange={handleChange}
-                className={`w-full px-5 py-4 bg-gray-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all ${errors.email ? 'border-red-400 focus:ring-red-50' : 'border-gray-100 focus:ring-indigo-100 focus:border-indigo-500'}`} 
+                className={`w-full px-5 py-4 bg-gray-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all ${errors.email ? 'border-red-400 focus:ring-red-50' : 'border-gray-100 focus:ring-indigo-500/20 focus:border-indigo-500'}`} 
               />
               {errors.email && <p className="text-red-500 text-xs mt-1 px-5">{errors.email}</p>}
             </div>
@@ -127,7 +129,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={form.password} 
                   onChange={handleChange}
-                  className={`w-full px-5 py-4 bg-gray-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all ${errors.password ? 'border-red-400 focus:ring-red-50' : 'border-gray-100 focus:ring-indigo-100 focus:border-indigo-500'}`} 
+                  className={`w-full px-5 py-4 bg-gray-50 border rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all ${errors.password ? 'border-red-400 focus:ring-red-50' : 'border-gray-100 focus:ring-indigo-500/20 focus:border-indigo-500'}`} 
                 />
                 <button 
                   type="button"

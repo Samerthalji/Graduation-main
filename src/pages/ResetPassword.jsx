@@ -1,15 +1,47 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { ResetPasswordFinal } from '../Api/authService';
 
 export default function ResetPassword() {
   const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { userEmail, resetCode } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // منطق التحديث
-    alert("Password Updated Successfully!");
-    navigate('/login');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await ResetPasswordFinal({
+        email: userEmail,
+        code: resetCode,
+        newPassword: formData.password
+      });
+      if (response.status === 200 || response.status === 201) {
+        alert("Password Updated Successfully!");
+        navigate('/login');
+      }
+    } catch (err) {
+      console.error("Reset password error:", err);
+      setError(err?.message || 'Failed to reset password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,7 +65,10 @@ export default function ResetPassword() {
               required
               placeholder="••••••••"
               className="w-full h-14 px-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-all"
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
+              onChange={(e) => {
+                setFormData({...formData, password: e.target.value});
+                setError('');
+              }}
             />
           </div>
           <div>
@@ -43,12 +78,25 @@ export default function ResetPassword() {
               required
               placeholder="••••••••"
               className="w-full h-14 px-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-all"
-              onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+              onChange={(e) => {
+                setFormData({...formData, confirmPassword: e.target.value});
+                setError('');
+              }}
             />
           </div>
 
-          <button type="submit" className="w-full py-3 px-4 font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg">
-            Update Password
+          {error && (
+            <div className="text-center text-sm text-red-600 bg-red-50 py-2 px-4 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full py-3 px-4 font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Updating...' : 'Update Password'}
           </button>
         </form>
 

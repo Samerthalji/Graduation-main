@@ -6,11 +6,12 @@ import { useUser } from '../context/UserContext';
 
 // --- مكون القائمة الجانبية (Sidebar) ---
 const Sidebar = ({ user }) => {
+  const { logout } = useUser();
   const menuItems = [
-    { name: 'Home', icon: 'fa-house', active: true },
-    { name: 'Jobs', icon: 'fa-briefcase', active: false },
-    { name: 'My Applications', icon: 'fa-file-lines', active: false },
-    { name: 'Saved Jobs', icon: 'fa-bookmark', active: false },
+    { name: 'Home', icon: 'fa-house', path: '/home' },
+    { name: 'Jobs', icon: 'fa-briefcase', path: '/jobs' },
+    { name: 'My Applications', icon: 'fa-file-lines', path: '/applications' },
+    { name: 'Saved Jobs', icon: 'fa-bookmark', path: '/saved' },
   ];
 
   return (
@@ -22,7 +23,7 @@ const Sidebar = ({ user }) => {
           <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full"></div>
         </div>
         <h3 className="text-lg font-black text-slate-900 leading-tight">{user?.fName} {user?.lName}</h3>
-        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-2 px-4 py-1.5 bg-blue-50/50 rounded-xl">Full-Stack Developer</p>
+        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mt-2 px-4 py-1.5 bg-blue-50/50 rounded-xl">{user?.headline || 'Developer'}</p>
         <Link to="/profile" className="w-full mt-6 py-3 border-2 border-slate-50 rounded-2xl text-[10px] font-black text-slate-400 hover:bg-slate-900 hover:border-slate-900 hover:text-white transition-all uppercase tracking-widest">
           View Profile
         </Link>
@@ -31,24 +32,31 @@ const Sidebar = ({ user }) => {
       {/* Nav Links */}
       <div className="bg-white rounded-[2.5rem] p-4 shadow-sm border border-slate-100 space-y-2">
         {menuItems.map((item) => (
-          <button key={item.name} className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all group ${item.active ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'text-slate-500 hover:bg-slate-50 hover:text-blue-600'}`}>
-            <i className={`fa-solid ${item.icon} text-lg ${item.active ? 'text-white' : 'group-hover:scale-110 transition-transform'}`}></i>
+          <Link
+            key={item.name}
+            to={item.path}
+            className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all group text-slate-500 hover:bg-blue-600 hover:text-white"
+          >
+            <i className={`fa-solid ${item.icon} text-lg group-hover:scale-110 transition-transform`}></i>
             <span className="text-sm font-bold">{item.name}</span>
-          </button>
+          </Link>
         ))}
         <hr className="my-4 border-slate-50" />
-        <button className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl text-rose-500 hover:bg-rose-50 transition-all font-bold text-sm">
           <i className="fa-solid fa-right-from-bracket"></i>
           <span>Logout</span>
         </button>
       </div>
 
-      <button className="w-full py-4 bg-slate-900 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-950 transition-all flex items-center justify-center gap-2">
+      <Link to="/create-company" className="w-full py-4 bg-slate-900 text-white rounded-[1.8rem] font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-indigo-950 transition-all flex items-center justify-center gap-2">
         <i className="fa-solid fa-plus-circle text-xs"></i> Create Company
-      </button>
+      </Link>
     </div>
   );
 };
+
 
 // --- مكون الجانب الأيمن (RightPanel) ---
 const RightPanel = () => {
@@ -155,7 +163,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column */}
-          <aside className="hidden lg:block lg:col-span-3 sticky top-24 h-fit">
+          <aside className="hidden lg:block lg:col-span-3 sticky top-24 h-fit z-10">
             <Sidebar user={user} />
           </aside>
 
@@ -220,7 +228,7 @@ export default function HomePage() {
           </div>
 
           {/* Right Column */}
-          <aside className="hidden lg:block lg:col-span-3 sticky top-24 h-fit">
+          <aside className="hidden lg:block lg:col-span-3 sticky top-24 h-fit z-10">
             <RightPanel />
           </aside>
 

@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react"; // 1. أضفنا useEffect و useContext هنا
-import { getUserProfile } from "../Api/userService"; // 2. تأكد أن هذا المسار صحيح
+import { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getUserProfile } from "../Api/userService";
 
 const UserContext = createContext();
 
@@ -34,6 +35,7 @@ export const UserProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
+    window.location.href = '/login';
   };
 
   return (

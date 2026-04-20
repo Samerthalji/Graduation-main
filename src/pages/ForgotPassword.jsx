@@ -11,7 +11,7 @@ export default function ForgotPassword() {
  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        const response = await forgotPasswordApi(email); // ✅ string مباشرة
+        const response = await forgotPasswordApi(email); 
         if (response.status === 200 || response.status === 201) {
             setUserEmail(email); 
             navigate('/password-verification');

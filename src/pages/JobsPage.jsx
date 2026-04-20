@@ -4,14 +4,15 @@ import Sidebar from '../components/Sidebar';
 import RightPanel from '../components/RightPanel';
 import JobCard from '../components/JobCard';
 import Footer from '../components/Footer';
-import { jobsData } from '../data/jobs';
+import { useJobs } from '../context/JobContext';
 
 export default function JobsPage() {
+  const { jobs, loading, error, fetchJobs, fetchJobsBySkill, savedJobIds, toggleSaveJob } = useJobs();
   const [search, setSearch] = useState('');
   const [jobTypes, setJobTypes] = useState([]);
   const [experience, setExperience] = useState('');
-  const [savedJobs, setSavedJobs] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isSkillSearch, setIsSkillSearch] = useState(false);
   const jobsPerPage = 4;
 
   const toggleJobType = (type) => {
@@ -20,22 +21,44 @@ export default function JobsPage() {
     );
   };
 
-  const filtered = jobsData.filter(job => {
-    const matchSearch = job.title.toLowerCase().includes(search.toLowerCase()) ||
-      job.company.toLowerCase().includes(search.toLowerCase());
+  // البحث بالمهارة عن طريق الـ API
+  const handleSearch = async () => {
+    setCurrentPage(1);
+    if (search.trim()) {
+      setIsSkillSearch(true);
+      await fetchJobsBySkill(search.trim(), 1, 50);
+    } else {
+      setIsSkillSearch(false);
+      await fetchJobs();
+    }
+  };
+
+  // إعادة تحميل كل الوظائف
+  const handleClearSearch = async () => {
+    setSearch('');
+    setIsSkillSearch(false);
+    setCurrentPage(1);
+    await fetchJobs();
+  };
+
+  // تحويل بيانات الـ API — هسا بيجي mapped من الـ Context
+  const mappedJobs = jobs;
+
+  const filtered = mappedJobs.filter(job => {
     const matchType = jobTypes.length === 0 || jobTypes.some(t =>
       job.type.toLowerCase().includes(t.toLowerCase()) ||
       job.jobType.toLowerCase().includes(t.toLowerCase())
     );
     const matchExp = !experience || job.experience.toLowerCase() === experience.toLowerCase();
-    return matchSearch && matchType && matchExp;
+    return matchType && matchExp;
   });
 
   const totalPages = Math.ceil(filtered.length / jobsPerPage);
   const paginated = filtered.slice((currentPage - 1) * jobsPerPage, currentPage * jobsPerPage);
 
   const handleSave = (id) => {
-    setSavedJobs(prev => prev.includes(id) ? prev.filter(j => j !== id) : [...prev, id]);
+    const job = jobs.find(j => j.id === id);
+    if (job) toggleSaveJob(job);
   };
 
   return (
@@ -54,9 +77,10 @@ export default function JobsPage() {
                 <div className="flex-1 min-w-[200px] relative">
                   <input
                     type="text"
-                    placeholder="Search for jobs (e.g. .NET Developer)..."
+                    placeholder="Search by skill (e.g. React, .NET)..."
                     value={search}
-                    onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                    onChange={e => setSearch(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
                     className="w-full pr-4 pl-10 py-3 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all outline-none"
                   />
                   <span className="absolute left-3 top-3.5 text-gray-400">
@@ -65,9 +89,20 @@ export default function JobsPage() {
                     </svg>
                   </span>
                 </div>
-                <button className="bg-blue-800 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-md">
+                <button
+                  onClick={handleSearch}
+                  className="bg-blue-800 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-200 shadow-md"
+                >
                   Search
                 </button>
+                {isSkillSearch && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold transition-all duration-200"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
 
               <hr className="mb-6 border-gray-100" />
@@ -102,17 +137,42 @@ export default function JobsPage() {
               </div>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="text-center py-10">
+                <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-gray-500">Loading jobs...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <div className="text-red-600 text-center py-10 bg-red-50 rounded-xl px-4 w-full">
+                <p className="font-semibold">Failed to load jobs</p>
+                <p className="text-sm mt-1">{error}</p>
+              </div>
+            )}
+
             {/* Job Cards */}
-            {paginated.length === 0 ? (
-              <div className="text-gray-500 text-center py-10">No jobs found matching your criteria.</div>
-            ) : (
-              paginated.map(job => (
-                <JobCard key={job.id} job={job} savedJobs={savedJobs} onSave={handleSave} />
-              ))
+            {!loading && !error && (
+              <>
+                {isSkillSearch && (
+                  <div className="w-full mb-2 text-sm text-gray-500">
+                    Showing results for skill: <span className="font-bold text-indigo-600">"{search}"</span> ({filtered.length} jobs found)
+                  </div>
+                )}
+                {paginated.length === 0 ? (
+                  <div className="text-gray-500 text-center py-10">No jobs found matching your criteria.</div>
+                ) : (
+                  paginated.map(job => (
+                    <JobCard key={job.id} job={job} savedJobs={savedJobIds} onSave={handleSave} />
+                  ))
+                )}
+              </>
             )}
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {!loading && totalPages > 1 && (
               <div className="flex items-center justify-between border border-gray-400 bg-white px-2 py-4 sm:px-6 rounded-xl shadow-sm mt-8 w-full" dir="ltr">
                 <div className="hidden sm:flex sm:flex-1 px-5 sm:items-center sm:justify-between">
                   <p className="text-sm text-gray-700">

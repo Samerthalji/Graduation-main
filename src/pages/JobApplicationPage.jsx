@@ -1,16 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { jobsData } from '../data/jobs';
+import { getJobById } from '../Api/jobService';
 
 export default function JobApplicationPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const job = jobsData.find(j => j.id === parseInt(id)) || jobsData[0];
 
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [cvFile, setCvFile] = useState(null);
   const [saved, setSaved] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        setLoading(true);
+        const response = await getJobById(id);
+        setJob(response.data);
+      } catch (err) {
+        console.error("Error fetching job:", err);
+        setError(err?.message || "Failed to load job details");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJob();
+  }, [id]);
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) setCvFile(e.target.files[0]);
@@ -27,6 +45,49 @@ export default function JobApplicationPage() {
   const closeModal = () => {
     setShowModal(false);
     setCvFile(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-gray-500">Loading job details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !job) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-center bg-white p-10 rounded-2xl shadow-lg">
+          <p className="text-red-600 font-bold text-lg mb-2">Failed to load job</p>
+          <p className="text-gray-500 text-sm mb-4">{error}</p>
+          <button onClick={() => navigate('/jobs')} className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-semibold">
+            Back to Jobs
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // تحويل بيانات الـ API
+  const mappedJob = {
+    id: job.id,
+    title: job.title,
+    company: job.companyName || 'Unknown Company',
+    logo: '/googleLogo.png',
+    date: job.createdAt ? new Date(job.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '',
+    salary: job.salary,
+    type: job.typeJob || '',
+    experience: job.experienceLevel || '',
+    location: job.location || '',
+    jobType: job.typeJob || '',
+    description: job.description || '',
+    skills: job.skills || [],
+    applicationsCount: job.applicationsCount || 0,
+    responsibilities: [],
   };
 
   return (
@@ -54,14 +115,14 @@ export default function JobApplicationPage() {
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="flex items-center gap-5">
                   <div className="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-100 overflow-hidden shrink-0">
-                    <img src={job.logo} alt={job.company} className="w-16 h-16 rounded-md object-contain" />
+                    <img src={mappedJob.logo} alt={mappedJob.company} className="w-16 h-16 rounded-md object-contain" />
                   </div>
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-extrabold text-blue-800 leading-tight">{job.title}</h1>
-                    <p className="text-blue-800 font-bold text-lg">{job.company}</p>
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-blue-800 leading-tight">{mappedJob.title}</h1>
+                    <p className="text-blue-800 font-bold text-lg">{mappedJob.company}</p>
                   </div>
                 </div>
-                <span className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-bold">{job.jobType}</span>
+                <span className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-bold">{mappedJob.jobType}</span>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-gray-50">
@@ -69,28 +130,28 @@ export default function JobApplicationPage() {
                   <i className="fa-solid fa-sack-dollar text-blue-800"></i>
                   <div>
                     <p className="text-xs text-gray-400">Salary</p>
-                    <p className="text-sm font-bold text-blue-800">${job.salary}</p>
+                    <p className="text-sm font-bold text-blue-800">${mappedJob.salary}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <i className="fa-solid fa-location-dot text-blue-800"></i>
                   <div>
                     <p className="text-xs text-gray-400">Location</p>
-                    <p className="text-sm font-bold text-blue-800">{job.location} ({job.type})</p>
+                    <p className="text-sm font-bold text-blue-800">{mappedJob.location} ({mappedJob.type})</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <i className="fa-solid fa-briefcase text-blue-800"></i>
                   <div>
                     <p className="text-xs text-gray-400">Experience</p>
-                    <p className="text-sm font-bold text-blue-800">{job.experience}</p>
+                    <p className="text-sm font-bold text-blue-800">{mappedJob.experience}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <i className="fa-solid fa-calendar text-blue-800"></i>
                   <div>
                     <p className="text-xs text-gray-400">Posted</p>
-                    <p className="text-sm font-bold text-blue-800">{job.date}</p>
+                    <p className="text-sm font-bold text-blue-800">{mappedJob.date}</p>
                   </div>
                 </div>
               </div>
@@ -100,11 +161,25 @@ export default function JobApplicationPage() {
             <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
               <h3 className="text-xl font-bold text-indigo-950 mb-4">Job Description</h3>
               <div className="text-gray-600 leading-relaxed space-y-4">
-                <p>{job.description}</p>
-                <h4 className="font-bold text-indigo-950 pt-2">Key Responsibilities:</h4>
-                <ul className="list-disc pl-5 space-y-2">
-                  {job.responsibilities.map((r, i) => <li key={i}>{r}</li>)}
-                </ul>
+                <p>{mappedJob.description}</p>
+                {mappedJob.skills.length > 0 && (
+                  <>
+                    <h4 className="font-bold text-indigo-950 pt-2">Required Skills:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {mappedJob.skills.map((skill, i) => (
+                        <span key={i} className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-sm font-semibold">{skill}</span>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {mappedJob.responsibilities.length > 0 && (
+                  <>
+                    <h4 className="font-bold text-indigo-950 pt-2">Key Responsibilities:</h4>
+                    <ul className="list-disc pl-5 space-y-2">
+                      {mappedJob.responsibilities.map((r, i) => <li key={i}>{r}</li>)}
+                    </ul>
+                  </>
+                )}
               </div>
             </div>
 
@@ -132,11 +207,11 @@ export default function JobApplicationPage() {
                 </button>
               </div>
               <div className="mt-10 pt-8 border-t border-indigo-900">
-                <h4 className="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-4">About {job.company}</h4>
+                <h4 className="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-4">About {mappedJob.company}</h4>
                 <div className="flex items-center gap-3">
-                  <img src={job.logo} alt={job.company} className="w-10 h-10 rounded-lg bg-white p-1" />
+                  <img src={mappedJob.logo} alt={mappedJob.company} className="w-10 h-10 rounded-lg bg-white p-1" />
                   <div>
-                    <p className="text-sm font-bold">{job.company} Inc.</p>
+                    <p className="text-sm font-bold">{mappedJob.company} Inc.</p>
                     <a href="#" className="text-xs text-indigo-400 hover:underline">View Company Profile</a>
                   </div>
                 </div>

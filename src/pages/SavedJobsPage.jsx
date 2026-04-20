@@ -4,10 +4,10 @@ import Sidebar from '../components/Sidebar';
 import RightPanel from '../components/RightPanel';
 import JobCard from '../components/JobCard';
 import Footer from '../components/Footer';
-import { jobsData } from '../data/jobs';
+import { useJobs } from '../context/JobContext';
 
 export default function SavedJobsPage() {
-  const [savedJobs, setSavedJobs] = useState([1, 2]);
+  const { loading, savedJobs, savedJobIds, toggleSaveJob } = useJobs();
   const [search, setSearch] = useState('');
   const [jobTypes, setJobTypes] = useState([]);
   const [experience, setExperience] = useState('');
@@ -19,12 +19,12 @@ export default function SavedJobsPage() {
   };
 
   const handleUnsave = (id) => {
-    setSavedJobs(prev => prev.filter(j => j !== id));
+    const job = savedJobs.find(j => j.id === id);
+    if (job) toggleSaveJob(job);
   };
 
-  const saved = jobsData.filter(j => savedJobs.includes(j.id));
-
-  const filtered = saved.filter(job => {
+  // الوظائف المحفوظة جاهزة مباشرة من الـ localStorage — لا تحتاج انتظار API
+  const filtered = savedJobs.filter(job => {
     const matchSearch = job.title.toLowerCase().includes(search.toLowerCase()) ||
       job.company.toLowerCase().includes(search.toLowerCase());
     const matchType = jobTypes.length === 0 || jobTypes.some(t =>
@@ -99,12 +99,38 @@ export default function SavedJobsPage() {
               </div>
             </div>
 
-            {paginated.length === 0 ? (
-              <div className="text-gray-500 text-center py-10">No saved jobs found.</div>
-            ) : (
-              paginated.map(job => (
-                <JobCard key={job.id} job={job} showUnsave onUnsave={handleUnsave} savedJobs={savedJobs} />
-              ))
+            {/* عدد الوظائف المحفوظة */}
+            {savedJobIds.length > 0 && (
+              <div className="w-full text-sm text-gray-500 mb-2">
+                You have <span className="font-bold text-indigo-600">{savedJobIds.length}</span> saved job{savedJobIds.length !== 1 ? 's' : ''}
+              </div>
+            )}
+
+            {/* Loading State */}
+            {loading && savedJobIds.length > 0 && (
+              <div className="text-center py-10">
+                <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p className="text-gray-500">Loading your saved jobs...</p>
+              </div>
+            )}
+
+            {/* Job Cards */}
+            {!loading && (
+              <>
+                {paginated.length === 0 ? (
+                  <div className="text-gray-500 text-center py-10">
+                    {savedJobIds.length === 0
+                      ? "You haven't saved any jobs yet."
+                      : search
+                      ? `No saved jobs match "${search}".`
+                      : "No saved jobs match your filters."}
+                  </div>
+                ) : (
+                  paginated.map(job => (
+                    <JobCard key={job.id} job={job} showUnsave onUnsave={handleUnsave} savedJobs={savedJobIds} />
+                  ))
+                )}
+              </>
             )}
 
             {/* Pagination */}

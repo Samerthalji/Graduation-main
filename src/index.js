@@ -4,12 +4,15 @@ import "./index.css";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { UserProvider } from "./context/UserContext";
+import { JobProvider } from "./context/JobContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
       <UserProvider>
-        <App />
+        <JobProvider>
+          <App />
+        </JobProvider>
       </UserProvider>
     </AuthProvider>
   </React.StrictMode>
